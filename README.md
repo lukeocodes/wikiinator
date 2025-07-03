@@ -110,9 +110,28 @@ jobs:
 
 ## Prerequisites
 
-1. **Enable Wiki**: Make sure the wiki is enabled for your repository
-2. **Home File**: Ensure you have a `Home.md` file in your docs directory
-3. **Permissions**: The action needs write access to the wiki
+⚠️ **Important**: You must complete these steps before using this action:
+
+### 1. Enable Wiki
+
+- Go to your repository **Settings** → **Features**
+- Check the **Wikis** checkbox to enable it
+
+### 2. Initialize Wiki
+
+- Go to your repository's **Wiki** tab
+- Click **Create the first page**
+- Create any page (e.g., title: "Home", content: "Welcome to the Wiki")
+- This initializes the wiki git repository
+
+### 3. Create Home.md
+
+- Ensure you have a `Home.md` file in your docs directory
+- This will become your wiki's main page
+
+### 4. Permissions
+
+- The action uses `GITHUB_TOKEN` which has write access to wikis by default
 
 ## File Structure
 
@@ -132,25 +151,51 @@ your-repo/
 
 ## Troubleshooting
 
-### Wiki Not Found Error
+### ❌ "Failed to clone wiki repository" Error
 
-If you get a "Failed to clone wiki repository" error:
+This is the most common issue. The wiki must be **manually enabled and initialized**:
 
-1. Make sure the wiki is enabled for your repository
-2. Create at least one wiki page manually to initialize the wiki
-3. Check that the `GITHUB_TOKEN` has the necessary permissions
+1. **Enable Wiki Feature**:
+   - Go to `Settings` → `Features` → Check `Wikis`
+2. **Initialize Wiki**:
+   - Go to the `Wiki` tab → Click `Create the first page`
+   - Create any page (this creates the wiki git repository)
+3. **Verify Setup**:
+   - Your wiki URL should be accessible: `https://github.com/YOUR_USERNAME/YOUR_REPO/wiki`
 
-### Missing Home.md
+### ❌ Missing Home.md Error
 
-The action requires a `Home.md` file in your docs directory. This becomes the main page of your wiki.
+The action requires a `Home.md` file in your docs directory:
 
-### No Changes Detected
+- This file becomes your wiki's main page
+- Make sure it exists: `docs/Home.md`
+- Check the file name capitalization
 
-If no changes are being made:
+### ❌ No Changes Detected
 
-1. Check if files are actually different from what's in the wiki
-2. Verify the `docs-path` is correct
-3. Make sure files aren't being excluded
+If the action runs but no changes are made:
+
+1. **Check File Differences**: Files might be identical to what's already in the wiki
+2. **Verify Docs Path**: Ensure `docs-path` parameter points to the correct directory
+3. **Check Exclusions**: Make sure your files aren't being excluded by `exclude-files`
+4. **File Extensions**: Only `.md` files are synchronized
+
+### ❌ Permission Errors
+
+- The default `GITHUB_TOKEN` should have wiki write permissions
+- If using a custom token, ensure it has `repo` scope
+- Organization repositories might have additional restrictions
+
+### 🔍 Debug Mode
+
+Use dry-run mode to test without making changes:
+
+```yaml
+- uses: lukeocodes/sync-docs-to-wiki@v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    dry-run: "true"
+```
 
 ## Contributing
 

@@ -77,7 +77,21 @@ log "Cloning wiki repository..."
 wiki_url="https://x-access-token:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
 
 if ! git clone "$wiki_url" wiki 2>/dev/null; then
-    log_error "Failed to clone wiki repository. Make sure the wiki is enabled for this repository."
+    log_error "Failed to clone wiki repository."
+    log_error ""
+    log_error "This usually means the wiki is not enabled or initialized for this repository."
+    log_error ""
+    log_error "To fix this:"
+    log_error "1. Go to your repository on GitHub"
+    log_error "2. Click on the 'Settings' tab"
+    log_error "3. Scroll down to the 'Features' section"
+    log_error "4. Check the 'Wikis' checkbox to enable it"
+    log_error "5. Go to the 'Wiki' tab and create your first page"
+    log_error "   (you can create a simple page with just 'Hello Wiki' as content)"
+    log_error ""
+    log_error "Repository: https://github.com/${GITHUB_REPOSITORY}"
+    log_error "Wiki URL: https://github.com/${GITHUB_REPOSITORY}/wiki"
+    log_error "Settings: https://github.com/${GITHUB_REPOSITORY}/settings"
     exit 1
 fi
 
