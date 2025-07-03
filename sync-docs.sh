@@ -170,7 +170,9 @@ for file in *.md; do
         fi
 
         log "Processing: $file"
-        log "File size: $(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "unknown") bytes"
+        # Get file size (try different stat formats)
+        file_size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "unknown")
+        log "File size: $file_size bytes"
 
         if [ "$DRY_RUN" = "true" ]; then
             log "DRY RUN: Would copy $file to ../wiki/"
@@ -187,12 +189,16 @@ for file in *.md; do
             log_success "Successfully copied $file"
         fi
 
-        ((files_synced++))
+        log "About to increment files_synced counter"
+        files_synced=$((files_synced + 1))
+        log "Files synced count: $files_synced"
     else
         log_warning "File not found or not a regular file: $file"
     fi
 done
 
+log "Finished file processing loop"
+log "Total files processed: $files_synced"
 log "Finished processing files, changing back to parent directory"
 if ! cd ..; then
     log_error "Failed to change back to parent directory"
