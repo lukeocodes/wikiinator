@@ -106,9 +106,17 @@ Source: $GITHUB_REPOSITORY@$GITHUB_SHA
 Triggered by: $GITHUB_EVENT_NAME
 Files synced: $files_synced"
 
-        git push
-        changes_made=true
-        log_success "Wiki updated successfully!"
+        if git push; then
+            changes_made=true
+            log_success "Wiki updated successfully!"
+        else
+            log_error "Failed to push to wiki repository!"
+            log_error "This is usually a permissions issue. Check:"
+            log_error "1. Repository Settings → Actions → Workflow permissions"
+            log_error "2. Make sure 'Read and write permissions' is enabled"
+            log_error "3. Wiki is enabled in repository Features"
+            exit 1
+        fi
     fi
 
     cd ..
