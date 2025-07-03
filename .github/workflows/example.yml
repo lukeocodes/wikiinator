@@ -1,0 +1,49 @@
+name: Sync Docs to Wiki
+
+on:
+  push:
+    paths:
+      - "docs/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "docs/**"
+  workflow_dispatch:
+
+jobs:
+  # Dry run for pull requests
+  dry-run:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dry run sync
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: "true"
+
+  # Actual sync for pushes to main
+  sync:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync docs to wiki
+        id: sync
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          docs-path: "docs"
+          exclude-files: "README.md"
+          commit-message: "Sync documentation from main repository"
+
+      - name: Show results
+        run: |
+          echo "Files synced: ${{ steps.sync.outputs.files-synced }}"
+          echo "Changes made: ${{ steps.sync.outputs.changes-made }}"

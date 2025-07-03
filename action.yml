@@ -1,0 +1,64 @@
+name: "Luke's Wikiinator"
+description: "Automatically sync documentation from your repository to GitHub Wiki"
+author: "Luke Oliff"
+branding:
+  icon: "zap"
+  color: "black"
+
+inputs:
+  github-token:
+    description: "GitHub token with wiki access"
+    required: true
+    default: ${{ github.token }}
+
+  docs-path:
+    description: "Path to documentation folder"
+    required: false
+    default: "docs"
+
+  exclude-files:
+    description: "Comma-separated list of files to exclude from sync"
+    required: false
+    default: "README.md"
+
+  wiki-home-file:
+    description: "Name of the file that should be treated as Home.md"
+    required: false
+    default: "Home.md"
+
+  commit-message:
+    description: "Custom commit message template"
+    required: false
+    default: "Sync docs from main repo"
+
+  dry-run:
+    description: "Run in dry-run mode (no actual changes)"
+    required: false
+    default: "false"
+
+outputs:
+  files-synced:
+    description: "Number of files that were synced"
+    value: ${{ steps.sync-docs.outputs.files-synced }}
+
+  changes-made:
+    description: "Whether any changes were made to the wiki"
+    value: ${{ steps.sync-docs.outputs.changes-made }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Sync Documentation
+      id: sync-docs
+      shell: bash
+      run: ${{ github.action_path }}/sync-docs.sh
+      env:
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_DOCS_PATH: ${{ inputs.docs-path }}
+        INPUT_EXCLUDE_FILES: ${{ inputs.exclude-files }}
+        INPUT_WIKI_HOME_FILE: ${{ inputs.wiki-home-file }}
+        INPUT_COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
