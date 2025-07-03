@@ -49,25 +49,54 @@ COMMIT_MESSAGE="${INPUT_COMMIT_MESSAGE:-Sync docs from main repo}"
 DRY_RUN="${INPUT_DRY_RUN:-false}"
 
 log "Starting documentation sync..."
-log "Docs path: $DOCS_PATH"
-log "Exclude files: $EXCLUDE_FILES"
-log "Wiki home file: $WIKI_HOME_FILE"
-log "Dry run: $DRY_RUN"
+log "Environment information:"
+log "  - Working directory: $(pwd)"
+log "  - Repository: $GITHUB_REPOSITORY"
+log "  - SHA: $GITHUB_SHA"
+log "  - Event: $GITHUB_EVENT_NAME"
+log "  - GitHub Output: $GITHUB_OUTPUT"
+log "Configuration:"
+log "  - Docs path: $DOCS_PATH"
+log "  - Exclude files: $EXCLUDE_FILES"
+log "  - Wiki home file: $WIKI_HOME_FILE"
+log "  - Dry run: $DRY_RUN"
+log "  - Commit message: $COMMIT_MESSAGE"
+
+# Debug: Show current directory structure
+log "Debug: Current directory structure"
+ls -la . 2>/dev/null || log_warning "Could not list current directory"
 
 # Check if docs directory exists
 if [ ! -d "$DOCS_PATH" ]; then
     log_error "Documentation directory '$DOCS_PATH' not found!"
+    log_error "Available directories:"
+    ls -la . 2>/dev/null || log_error "Cannot list current directory"
     exit 1
 fi
 
+log_success "Documentation directory '$DOCS_PATH' found"
+
 # Check if there are any .md files in docs directory
+log "Checking for markdown files in '$DOCS_PATH' directory"
 md_files=$(find "$DOCS_PATH" -maxdepth 1 -name "*.md" -type f | wc -l)
+log "Found $md_files markdown files"
+
 if [ "$md_files" -eq 0 ]; then
     log_warning "No markdown files found in '$DOCS_PATH' directory"
-    echo "files-synced=0" >>$GITHUB_OUTPUT
-    echo "changes-made=false" >>$GITHUB_OUTPUT
+    log_warning "Directory contents:"
+    ls -la "$DOCS_PATH/" 2>/dev/null || log_error "Cannot list docs directory"
+
+    # Set outputs for early exit
+    if [ -n "$GITHUB_OUTPUT" ]; then
+        echo "files-synced=0" >>"$GITHUB_OUTPUT"
+        echo "changes-made=false" >>"$GITHUB_OUTPUT"
+        log "Set outputs for early exit"
+    fi
+
     exit 0
 fi
+
+log_success "Found $md_files markdown files to process"
 
 # Convert exclude files to array
 IFS=',' read -ra EXCLUDE_ARRAY <<<"$EXCLUDE_FILES"
@@ -117,36 +146,74 @@ should_exclude() {
 
 # Copy docs to wiki
 log "Copying documentation files..."
-cd "$DOCS_PATH"
+log "Current directory: $(pwd)"
+log "Changing to docs directory: $DOCS_PATH"
+
+if ! cd "$DOCS_PATH"; then
+    log_error "Failed to change to docs directory: $DOCS_PATH"
+    exit 1
+fi
+
+log "Successfully changed to docs directory"
+log "Files in docs directory:"
+ls -la *.md 2>/dev/null || log_warning "No .md files found with ls"
 
 for file in *.md; do
+    log "Checking file: $file"
+
     if [ -f "$file" ]; then
+        log "File exists: $file"
+
         if should_exclude "$file"; then
             log "Skipping excluded file: $file"
             continue
         fi
 
         log "Processing: $file"
+        log "File size: $(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "unknown") bytes"
 
         if [ "$DRY_RUN" = "true" ]; then
-            log "DRY RUN: Would copy $file"
+            log "DRY RUN: Would copy $file to ../wiki/"
         else
-            cp "$file" "../wiki/"
+            log "Copying $file to ../wiki/"
+            if ! cp "$file" "../wiki/"; then
+                log_error "Failed to copy $file to ../wiki/"
+                log_error "Source file: $(pwd)/$file"
+                log_error "Destination: $(pwd)/../wiki/"
+                log_error "Wiki directory contents:"
+                ls -la ../wiki/ 2>/dev/null || log_error "Cannot list wiki directory"
+                exit 1
+            fi
+            log_success "Successfully copied $file"
         fi
 
         ((files_synced++))
+    else
+        log_warning "File not found or not a regular file: $file"
     fi
 done
 
-cd ..
-
-# Check if wiki home file exists
-if [ ! -f "wiki/$WIKI_HOME_FILE" ]; then
-    log_error "Wiki home file '$WIKI_HOME_FILE' not found in docs directory!"
-    log_error "Make sure you have a '$WIKI_HOME_FILE' file in your '$DOCS_PATH' directory"
+log "Finished processing files, changing back to parent directory"
+if ! cd ..; then
+    log_error "Failed to change back to parent directory"
     exit 1
 fi
 
+# Check if wiki home file exists
+log "Checking for wiki home file: wiki/$WIKI_HOME_FILE"
+log "Wiki directory contents:"
+ls -la wiki/ 2>/dev/null || log_error "Cannot list wiki directory"
+
+if [ ! -f "wiki/$WIKI_HOME_FILE" ]; then
+    log_error "Wiki home file '$WIKI_HOME_FILE' not found in wiki directory!"
+    log_error "Expected file: $(pwd)/wiki/$WIKI_HOME_FILE"
+    log_error "Make sure you have a '$WIKI_HOME_FILE' file in your '$DOCS_PATH' directory"
+    log_error "Files in docs directory:"
+    ls -la "$DOCS_PATH/" 2>/dev/null || log_error "Cannot list docs directory"
+    exit 1
+fi
+
+log_success "Found wiki home file: wiki/$WIKI_HOME_FILE"
 log_success "Copied $files_synced files to wiki"
 
 # Commit and push to wiki
@@ -155,14 +222,37 @@ if [ "$DRY_RUN" = "true" ]; then
     changes_made=true
 else
     log "Committing changes to wiki..."
-    cd wiki
+    log "Changing to wiki directory"
+
+    if ! cd wiki; then
+        log_error "Failed to change to wiki directory"
+        exit 1
+    fi
+
+    log "Current directory: $(pwd)"
 
     # Configure git
-    git config user.name "github-actions[bot]"
-    git config user.email "github-actions[bot]@users.noreply.github.com"
+    log "Configuring git user"
+    if ! git config user.name "github-actions[bot]"; then
+        log_error "Failed to configure git user.name"
+        exit 1
+    fi
+
+    if ! git config user.email "github-actions[bot]@users.noreply.github.com"; then
+        log_error "Failed to configure git user.email"
+        exit 1
+    fi
 
     # Add all files
-    git add -A
+    log "Adding all files to git"
+    if ! git add -A; then
+        log_error "Failed to add files to git"
+        exit 1
+    fi
+
+    # Show git status
+    log "Git status:"
+    git status 2>/dev/null || log_warning "Could not get git status"
 
     # Check if there are changes to commit
     if git diff --cached --quiet; then
@@ -171,6 +261,10 @@ else
     else
         log "Changes detected, committing..."
 
+        # Show what's being committed
+        log "Files to be committed:"
+        git diff --cached --name-only 2>/dev/null || log_warning "Could not get diff"
+
         # Create commit message
         full_commit_message="$COMMIT_MESSAGE
 
@@ -178,21 +272,49 @@ Source: $GITHUB_REPOSITORY@$GITHUB_SHA
 Triggered by: $GITHUB_EVENT_NAME
 Files synced: $files_synced"
 
-        git commit -m "$full_commit_message"
+        log "Committing with message: $COMMIT_MESSAGE"
+        if ! git commit -m "$full_commit_message"; then
+            log_error "Failed to commit changes"
+            exit 1
+        fi
 
         log "Pushing to wiki repository..."
-        git push
+        if ! git push; then
+            log_error "Failed to push to wiki repository"
+            exit 1
+        fi
 
         changes_made=true
         log_success "Wiki updated successfully!"
     fi
 
-    cd ..
+    log "Changing back to parent directory"
+    if ! cd ..; then
+        log_error "Failed to change back to parent directory"
+        exit 1
+    fi
 fi
 
 # Set outputs
-echo "files-synced=$files_synced" >>$GITHUB_OUTPUT
-echo "changes-made=$changes_made" >>$GITHUB_OUTPUT
+log "Setting GitHub Action outputs"
+log "  - files-synced: $files_synced"
+log "  - changes-made: $changes_made"
+
+if [ -n "$GITHUB_OUTPUT" ]; then
+    if ! echo "files-synced=$files_synced" >>"$GITHUB_OUTPUT"; then
+        log_error "Failed to write files-synced to GITHUB_OUTPUT"
+        exit 1
+    fi
+
+    if ! echo "changes-made=$changes_made" >>"$GITHUB_OUTPUT"; then
+        log_error "Failed to write changes-made to GITHUB_OUTPUT"
+        exit 1
+    fi
+
+    log_success "Successfully wrote outputs to $GITHUB_OUTPUT"
+else
+    log_warning "GITHUB_OUTPUT not set, skipping output generation"
+fi
 
 if [ "$changes_made" = "true" ]; then
     log_success "Documentation sync completed successfully!"
