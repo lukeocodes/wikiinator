@@ -51,7 +51,7 @@ runs:
     - name: Sync Documentation
       id: sync-docs
       shell: bash
-      run: ${{ github.action_path }}/sync-docs.sh
+      run: ${{ github.action_path }}/sync-docs-simple.sh
       env:
         INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
         INPUT_DOCS_PATH: ${{ inputs.docs-path }}
