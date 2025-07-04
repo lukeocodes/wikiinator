@@ -103,6 +103,7 @@ IFS=',' read -ra EXCLUDE_ARRAY <<<"$EXCLUDE_FILES"
 
 # Clone the wiki repository
 log "Cloning wiki repository..."
+log "Token info: ${INPUT_GITHUB_TOKEN:0:8}... (${#INPUT_GITHUB_TOKEN} chars)"
 wiki_url="https://x-access-token:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
 
 if ! git clone "$wiki_url" wiki 2>/dev/null; then
@@ -131,6 +132,12 @@ if [ ! -d "wiki/.git" ]; then
 fi
 
 log_success "Wiki repository cloned successfully"
+
+# Debug: Check git remote configuration
+cd wiki
+log "Git remote configuration:"
+git remote -v 2>/dev/null || log_warning "Could not get git remote info"
+cd ..
 
 # Function to check if file should be excluded
 should_exclude() {
@@ -285,8 +292,14 @@ Files synced: $files_synced"
         fi
 
         log "Pushing to wiki repository..."
+
+        # Ensure the remote URL has the token for push
+        log "Setting remote URL with token for push"
+        git remote set-url origin "https://x-access-token:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+
         if ! git push; then
             log_error "Failed to push to wiki repository"
+            log_error "Remote URL: $(git remote get-url origin 2>/dev/null | sed 's/:[^@]*@/:***@/')"
             exit 1
         fi
 
