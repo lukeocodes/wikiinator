@@ -1,6 +1,6 @@
 # Luke's Wikiinator
 
-[![GitHub Action](https://img.shields.io/badge/GitHub-Action-blue?logo=github)](https://github.com/marketplace/actions/sync-docs-to-wiki)
+[![GitHub Action](https://img.shields.io/badge/GitHub-Action-blue?logo=github)](https://github.com/marketplace/actions/luke-s-wikiinator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A GitHub Action that automatically synchronizes documentation from your repository to GitHub Wiki whenever changes are made to your docs folder.
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Sync docs to wiki
-        uses: lukeocodes/sync-docs-to-wiki@v1
+        uses: lukeocodes/wikiinator@v1
         # github-token is optional - defaults to {{ github.token }}
 ```
 
@@ -75,7 +75,7 @@ jobs:
 
 ```yaml
 - name: Sync docs to wiki
-  uses: lukeocodes/sync-docs-to-wiki@v1
+  uses: lukeocodes/wikiinator@v1
   with:
     github-token: ${{ github.token }}
 ```
@@ -84,7 +84,7 @@ jobs:
 
 ```yaml
 - name: Sync docs to wiki
-  uses: lukeocodes/sync-docs-to-wiki@v1
+  uses: lukeocodes/wikiinator@v1
   with:
     github-token: ${{ github.token }}
     docs-path: "documentation"
@@ -98,7 +98,7 @@ jobs:
 ```yaml
 - name: Sync docs to wiki
   id: sync
-  uses: lukeocodes/sync-docs-to-wiki@v1
+  uses: lukeocodes/wikiinator@v1
   with:
     github-token: ${{ github.token }}
 
@@ -112,7 +112,7 @@ jobs:
 
 ```yaml
 - name: Test sync (dry run)
-  uses: lukeocodes/sync-docs-to-wiki@v1
+  uses: lukeocodes/wikiinator@v1
   with:
     github-token: ${{ github.token }}
     dry-run: "true"
@@ -214,7 +214,7 @@ Other permission issues:
 Use dry-run mode to test without making changes:
 
 ```yaml
-- uses: lukeocodes/sync-docs-to-wiki@v1
+- uses: lukeocodes/wikiinator@v1
   with:
     github-token: ${{ github.token }}
     dry-run: "true"
