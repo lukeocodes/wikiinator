@@ -1,5 +1,3 @@
-# Debugging Strategies for GitHub Actions
-
 ## The Debugging Challenge
 
 GitHub Actions run in ephemeral environments without direct access for debugging. We learned effective strategies for troubleshooting complex issues.

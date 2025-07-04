@@ -1,5 +1,3 @@
-# Error Handling and User Experience in GitHub Actions
-
 ## The Challenge: Making Actions User-Friendly
 
 GitHub Actions can fail in many ways, but most error messages are cryptic and unhelpful. We learned how to create actionable, user-friendly error handling.

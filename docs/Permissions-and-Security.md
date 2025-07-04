@@ -1,5 +1,3 @@
-# Permissions and Security in GitHub Actions
-
 ## The Core Permission Challenge
 
 The biggest issue we encountered was GitHub Actions having insufficient permissions to write to wiki repositories, even though the same token worked in regular workflows.

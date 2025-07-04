@@ -1,5 +1,3 @@
-# Composite Actions Architecture
-
 ## Why We Chose Composite Actions
 
 When building this GitHub Action, we had several architecture options. Here's what we learned about composite actions and why we chose them.

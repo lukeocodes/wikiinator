@@ -1,5 +1,3 @@
-# GitHub Wiki Specifics
-
 ## What We Learned About GitHub Wikis
 
 GitHub Wikis have unique characteristics that significantly impacted our action design. Here are the key insights we discovered.

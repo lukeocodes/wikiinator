@@ -1,5 +1,3 @@
-# GitHub Token Handling in Composite Actions
-
 ## The Problem We Solved
 
 When creating this GitHub Action, we encountered several token-related issues that are common when building composite actions that need authentication.
