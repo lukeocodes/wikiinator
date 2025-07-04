@@ -6,6 +6,7 @@ on:
       - "docs/**"
     branches:
       - main
+  workflow_dispatch:
 
 # ⚠️ REQUIRED: Grant write permissions for wiki access
 permissions:
@@ -15,10 +16,10 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Sync docs to wiki
+      - name: Sync Docs to Wiki
         uses: lukeocodes/wikiinator@v1.0.0
         with:
           github-token: ${{ github.token }}

@@ -17,36 +17,13 @@ permissions:
 jobs:
   # Dry run for pull requests
   dry-run:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Dry run sync
+      - name: Dry Run Sync
         uses: ./
         with:
           github-token: ${{ github.token }}
           dry-run: "true"
-
-  # Actual sync for pushes to main
-  sync:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Sync docs to wiki
-        id: sync
-        uses: ./
-        with:
-          github-token: ${{ github.token }}
-          docs-path: "docs"
-          exclude-files: "README.md"
-          commit-message: "Sync documentation from main repository"
-
-      - name: Show results
-        run: |
-          echo "Files synced: ${{ steps.sync.outputs.files-synced }}"
-          echo "Changes made: ${{ steps.sync.outputs.changes-made }}"
