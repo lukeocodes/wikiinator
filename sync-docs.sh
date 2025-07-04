@@ -137,6 +137,35 @@ log_success "Wiki repository cloned successfully"
 cd wiki
 log "Git remote configuration:"
 git remote -v 2>/dev/null || log_warning "Could not get git remote info"
+
+# Early permission test - try to push without changes to detect permission issues early
+log "Testing write permissions..."
+git config user.name "github-actions[bot]"
+git config user.email "github-actions[bot]@users.noreply.github.com"
+git remote set-url origin "https://x-access-token:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+
+# Try a simple push to test permissions (this should be a no-op if no changes)
+permission_test_output=$(git push --dry-run 2>&1)
+permission_test_exit_code=$?
+
+if [ $permission_test_exit_code -ne 0 ]; then
+    if echo "$permission_test_output" | grep -q "403\|Permission.*denied\|not authorized"; then
+        log_error ""
+        log_error "🚨 PERMISSION ERROR DETECTED EARLY 🚨"
+        log_error ""
+        log_error "Your workflow doesn't have write permissions to push to the wiki."
+        log_error ""
+        log_error "QUICK FIX: Add this to your workflow file:"
+        log_error ""
+        log_error "permissions:"
+        log_error "  contents: write"
+        log_error ""
+        log_error "See: https://github.com/lukeocodes/wikiinator#troubleshooting"
+        exit 1
+    fi
+fi
+
+log_success "Write permissions verified"
 cd ..
 
 # Function to check if file should be excluded
@@ -297,9 +326,47 @@ Files synced: $files_synced"
         log "Setting remote URL with token for push"
         git remote set-url origin "https://x-access-token:${INPUT_GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
 
-        if ! git push; then
+        # Capture push output to detect permission errors
+        push_output=$(git push 2>&1)
+        push_exit_code=$?
+
+        if [ $push_exit_code -ne 0 ]; then
             log_error "Failed to push to wiki repository"
-            log_error "Remote URL: $(git remote get-url origin 2>/dev/null | sed 's/:[^@]*@/:***@/')"
+            log_error "Git push output: $push_output"
+
+            # Check for permission-related errors
+            if echo "$push_output" | grep -q "403\|Permission.*denied\|not authorized"; then
+                log_error ""
+                log_error "🚨 PERMISSION ERROR DETECTED 🚨"
+                log_error ""
+                log_error "This is likely because your workflow doesn't have write permissions."
+                log_error ""
+                log_error "QUICK FIX: Add this to your workflow file:"
+                log_error ""
+                log_error "permissions:"
+                log_error "  contents: write"
+                log_error ""
+                log_error "Example workflow:"
+                log_error "---"
+                log_error "name: Sync Docs to Wiki"
+                log_error "on: [push]"
+                log_error ""
+                log_error "permissions:"
+                log_error "  contents: write  # <- ADD THIS LINE"
+                log_error ""
+                log_error "jobs:"
+                log_error "  sync:"
+                log_error "    runs-on: ubuntu-latest"
+                log_error "    steps:"
+                log_error "      - uses: actions/checkout@v4"
+                log_error "      - uses: your-action@v1"
+                log_error "---"
+                log_error ""
+                log_error "For more help, see: https://github.com/lukeocodes/wikiinator#troubleshooting"
+            else
+                log_error "Remote URL: $(git remote get-url origin 2>/dev/null | sed 's/:[^@]*@/:***@/')"
+            fi
+
             exit 1
         fi
 

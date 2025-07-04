@@ -5,6 +5,13 @@
 
 A GitHub Action that automatically synchronizes documentation from your repository to GitHub Wiki whenever changes are made to your docs folder.
 
+> [!IMPORTANT] > **Required**: Add `permissions: contents: write` to your workflow for this action to work!
+>
+> ```yaml
+> permissions:
+>   contents: write
+> ```
+
 ## Features
 
 - 🔄 **Automatic Sync**: Syncs documentation files to your GitHub Wiki on every push
@@ -29,6 +36,7 @@ on:
     branches:
       - main
 
+# ⚠️ REQUIRED: Grant write permissions for wiki access
 permissions:
   contents: write
 
@@ -40,15 +48,14 @@ jobs:
 
       - name: Sync docs to wiki
         uses: lukeocodes/sync-docs-to-wiki@v1
-        with:
-          github-token: ${{ github.token }}
+        # github-token is optional - defaults to {{ github.token }}
 ```
 
 ## Inputs
 
 | Input            | Description                              | Required | Default                    |
 | ---------------- | ---------------------------------------- | -------- | -------------------------- |
-| `github-token`   | GitHub token with wiki access            | Yes      | None (must be provided)    |
+| `github-token`   | GitHub token with wiki access            | No       | `${{ github.token }}`      |
 | `docs-path`      | Path to documentation folder             | No       | `docs`                     |
 | `exclude-files`  | Comma-separated list of files to exclude | No       | `README.md`                |
 | `wiki-home-file` | Name of the file that should be Home.md  | No       | `Home.md`                  |

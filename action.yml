@@ -7,7 +7,7 @@ branding:
 
 inputs:
   github-token:
-    description: "GitHub token with wiki access. Default: secrets.GITHUB_TOKEN"
+    description: "GitHub token with wiki access. Optional - defaults to github.token if not provided."
     required: false
 
   docs-path:
