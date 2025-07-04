@@ -6,19 +6,19 @@ This directory contains comprehensive documentation about the architectural deci
 
 ### Core Architecture
 
-- **[Architecture](architecture.md)** - High-level design decisions and overview (this file)
-- **[Composite Actions Architecture](composite-actions-architecture.md)** - Deep dive into composite action design patterns
+- **[Architecture](Architecture.md)** - High-level design decisions and overview (this file)
+- **[Composite Actions Architecture](Composite-Actions-Architecture.md)** - Deep dive into composite action design patterns
 
 ### Implementation Lessons
 
-- **[GitHub Token Handling](github-token-handling.md)** - Token management, fallbacks, and validation
-- **[Permissions and Security](permissions-and-security.md)** - Permission requirements and security best practices
-- **[GitHub Wiki Specifics](github-wiki-specifics.md)** - Wiki-specific considerations and challenges
+- **[GitHub Token Handling](GitHub-Token-Handling.md)** - Token management, fallbacks, and validation
+- **[Permissions and Security](Permissions-and-Security.md)** - Permission requirements and security best practices
+- **[GitHub Wiki Specifics](GitHub-Wiki-Specifics.md)** - Wiki-specific considerations and challenges
 
 ### Development Practices
 
-- **[Error Handling and UX](error-handling-and-ux.md)** - User-friendly error messages and debugging
-- **[Debugging Strategies](debugging-strategies.md)** - Troubleshooting and development techniques
+- **[Error Handling and UX](Error-Handling-and-UX.md)** - User-friendly error messages and debugging
+- **[Debugging Strategies](Debugging-Strategies.md)** - Troubleshooting and development techniques
 
 ## What We Built
 
@@ -122,13 +122,13 @@ wikiinator/
 ├── README.md                     # User documentation
 ├── LICENSE                       # MIT license
 └── docs/                         # Architecture documentation
-    ├── architecture.md           # This file
-    ├── github-token-handling.md  # Token management patterns
-    ├── permissions-and-security.md # Security considerations
-    ├── github-wiki-specifics.md  # Wiki-specific challenges
-    ├── composite-actions-architecture.md # Action design
-    ├── error-handling-and-ux.md  # UX patterns
-    └── debugging-strategies.md   # Development practices
+    ├── Architecture.md           # This file
+    ├── GitHub-Token-Handling.md  # Token management patterns
+    ├── Permissions-and-Security.md # Security considerations
+    ├── GitHub-Wiki-Specifics.md  # Wiki-specific challenges
+    ├── Composite-Actions-Architecture.md # Action design
+    ├── Error-Handling-and-UX.md  # UX patterns
+    └── Debugging-Strategies.md   # Development practices
 ```
 
 ### Data Flow
