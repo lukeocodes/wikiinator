@@ -1,4 +1,4 @@
-# Sync Docs to Wiki
+# Luke's Wikiinator
 
 [![GitHub Action](https://img.shields.io/badge/GitHub-Action-blue?logo=github)](https://github.com/marketplace/actions/sync-docs-to-wiki)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
