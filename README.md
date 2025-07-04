@@ -38,14 +38,14 @@ jobs:
       - name: Sync docs to wiki
         uses: lukeocodes/sync-docs-to-wiki@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
 ```
 
 ## Inputs
 
 | Input            | Description                              | Required | Default                    |
 | ---------------- | ---------------------------------------- | -------- | -------------------------- |
-| `github-token`   | GitHub token with wiki access            | Yes      | `${{ github.token }}`      |
+| `github-token`   | GitHub token with wiki access            | Yes      | None (must be provided)    |
 | `docs-path`      | Path to documentation folder             | No       | `docs`                     |
 | `exclude-files`  | Comma-separated list of files to exclude | No       | `README.md`                |
 | `wiki-home-file` | Name of the file that should be Home.md  | No       | `Home.md`                  |
@@ -67,7 +67,7 @@ jobs:
 - name: Sync docs to wiki
   uses: lukeocodes/sync-docs-to-wiki@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ github.token }}
 ```
 
 ### Custom Configuration
@@ -76,7 +76,7 @@ jobs:
 - name: Sync docs to wiki
   uses: lukeocodes/sync-docs-to-wiki@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ github.token }}
     docs-path: "documentation"
     exclude-files: "README.md,INTERNAL.md"
     wiki-home-file: "Welcome.md"
@@ -90,7 +90,7 @@ jobs:
   id: sync
   uses: lukeocodes/sync-docs-to-wiki@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ github.token }}
 
 - name: Check sync results
   run: |
@@ -104,7 +104,7 @@ jobs:
 - name: Test sync (dry run)
   uses: lukeocodes/sync-docs-to-wiki@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ github.token }}
     dry-run: "true"
 ```
 
@@ -193,7 +193,7 @@ Use dry-run mode to test without making changes:
 ```yaml
 - uses: lukeocodes/sync-docs-to-wiki@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ github.token }}
     dry-run: "true"
 ```
 

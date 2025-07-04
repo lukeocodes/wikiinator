@@ -23,7 +23,7 @@ jobs:
       - name: Dry run sync
         uses: ./
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           dry-run: "true"
 
   # Actual sync for pushes to main
@@ -38,7 +38,7 @@ jobs:
         id: sync
         uses: ./
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           docs-path: "docs"
           exclude-files: "README.md"
           commit-message: "Sync documentation from main repository"

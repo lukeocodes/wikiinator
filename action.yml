@@ -9,7 +9,6 @@ inputs:
   github-token:
     description: "GitHub token with wiki access"
     required: true
-    default: ${{ github.token }}
 
   docs-path:
     description: "Path to documentation folder"
