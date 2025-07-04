@@ -7,31 +7,31 @@ branding:
 
 inputs:
   github-token:
-    description: "GitHub token with wiki access"
-    required: true
+    description: "GitHub token with wiki access. Default: secrets.GITHUB_TOKEN"
+    required: false
 
   docs-path:
-    description: "Path to documentation folder"
+    description: "Path to documentation folder. Default: docs"
     required: false
     default: "docs"
 
   exclude-files:
-    description: "Comma-separated list of files to exclude from sync"
+    description: "Comma-separated list of files to exclude from sync. Default: README.md"
     required: false
     default: "README.md"
 
   wiki-home-file:
-    description: "Name of the file that should be treated as Home.md"
+    description: "Name of the file that should be treated as Home.md. Default: Home.md"
     required: false
     default: "Home.md"
 
   commit-message:
-    description: "Custom commit message template"
+    description: "Custom commit message template. Default: Sync docs from main repo"
     required: false
     default: "Sync docs from main repo"
 
   dry-run:
-    description: "Run in dry-run mode (no actual changes)"
+    description: "Run in dry-run mode (no actual changes). Default: false"
     required: false
     default: "false"
 
@@ -50,9 +50,9 @@ runs:
     - name: Sync Documentation
       id: sync-docs
       shell: bash
-      run: ${{ github.action_path }}/sync-docs-simple.sh
+      run: ${{ github.action_path }}/sync-docs.sh
       env:
-        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token || github.token }}
         INPUT_DOCS_PATH: ${{ inputs.docs-path }}
         INPUT_EXCLUDE_FILES: ${{ inputs.exclude-files }}
         INPUT_WIKI_HOME_FILE: ${{ inputs.wiki-home-file }}
