@@ -29,6 +29,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -129,9 +132,10 @@ jobs:
 - Ensure you have a `Home.md` file in your docs directory
 - This will become your wiki's main page
 
-### 4. Permissions
+### 4. Workflow Permissions
 
-- The action uses `GITHUB_TOKEN` which has write access to wikis by default
+- Add `permissions: contents: write` to your workflow
+- This grants the action write access to the wiki repository
 
 ## File Structure
 
@@ -182,7 +186,19 @@ If the action runs but no changes are made:
 
 ### ❌ Permission Errors
 
-- The default `GITHUB_TOKEN` should have wiki write permissions
+**Most common fix**: Add `permissions: contents: write` to your workflow
+
+```yaml
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    # ... rest of your job
+```
+
+Other permission issues:
+
 - If using a custom token, ensure it has `repo` scope
 - Organization repositories might have additional restrictions
 

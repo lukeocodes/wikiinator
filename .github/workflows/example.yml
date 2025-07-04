@@ -11,6 +11,9 @@ on:
       - "docs/**"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   # Dry run for pull requests
   dry-run:
