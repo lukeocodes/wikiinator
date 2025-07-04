@@ -1,0 +1,27 @@
+name: Sync Docs to Wiki
+
+on:
+  push:
+    paths:
+      - "docs/**"
+    branches:
+      - main
+
+# ⚠️ REQUIRED: Grant write permissions for wiki access
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync docs to wiki
+        uses: lukeocodes/wikiinator@v1
+        with:
+          github-token: ${{ github.token }}
+          docs-path: "docs"
+          exclude-files: "README.md"
+          commit-message: "Sync documentation from main repository"
