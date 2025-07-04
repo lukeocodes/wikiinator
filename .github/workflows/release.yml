@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          npm install -g conventional-changelog-cli
+          npm install -g conventional-changelog-conventionalcommits
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Get tag name
+        id: tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Get previous tag
+        id: previous_tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "PREV_TAG=$PREV_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          if [ -n "${{ steps.previous_tag.outputs.PREV_TAG }}" ]; then
+            conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+          else
+            conventional-changelog -p conventionalcommits -i CHANGELOG.md -s -r 0
+          fi
+
+      - name: Check if changelog was generated
+        id: changelog_check
+        run: |
+          if [ -f CHANGELOG.md ] && [ -s CHANGELOG.md ]; then
+            echo "CHANGELOG_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "CHANGELOG_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changelog
+        if: steps.changelog_check.outputs.CHANGELOG_EXISTS == 'true'
+        run: |
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${{ steps.tag.outputs.TAG_NAME }}"
+
+      - name: Update tag to point to new commit
+        if: steps.changelog_check.outputs.CHANGELOG_EXISTS == 'true'
+        run: |
+          git tag -d ${{ steps.tag.outputs.TAG_NAME }}
+          git tag ${{ steps.tag.outputs.TAG_NAME }}
+          git push origin ${{ steps.tag.outputs.TAG_NAME }} --force
+
+      - name: Generate release notes
+        run: |
+          if [ -n "${{ steps.previous_tag.outputs.PREV_TAG }}" ]; then
+            conventional-changelog -p conventionalcommits -r 1 | tail -n +3 > release_notes.md
+          else
+            conventional-changelog -p conventionalcommits -r 1 | tail -n +3 > release_notes.md
+          fi
+
+          # If no release notes generated, create a simple one
+          if [ ! -s release_notes.md ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            echo "This release includes various improvements and bug fixes." >> release_notes.md
+            echo "" >> release_notes.md
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.PREV_TAG }}...${{ steps.tag.outputs.TAG_NAME }}" >> release_notes.md
+          fi
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.TAG_NAME }}
+          release_name: ${{ steps.tag.outputs.TAG_NAME }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.TAG_NAME, '-') }}
+
+      - name: Summary
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ steps.tag.outputs.TAG_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Previous Tag**: ${{ steps.previous_tag.outputs.PREV_TAG }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changelog Updated**: ${{ steps.changelog_check.outputs.CHANGELOG_EXISTS }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Created**: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Notes Preview" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          head -20 release_notes.md >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
